@@ -1,0 +1,22 @@
+<h1>Conta <%= @conta.numero %></h1>
+
+<p>Saldo: <%= number_to_currency(@conta.saldo) %></p>
+
+<% if @conta.bloqueada %>
+  <p>Conta bloqueada.</p>
+<% else %>
+  <%= form_tag transferencia_conta_path(@conta), method: :post do %>
+    <p>
+      <label for="conta_destino_id">Conta destino:</label>
+      <%= select_tag "conta_destino_id", options_from_collection_for_select(Conta.all, "id", "numero") %>
+    </p>
+    <p>
+      <label for="valor">Valor:</label>
+      <%= number_field_tag "valor" %>
+    </p>
+    <%= submit_tag "Transferir" %>
+  <% end %>
+
+  <%= link_to "Extrato", extrato_conta_path(@conta) %>
+  <%= link_to "Bloquear", bloquear_conta_path(@conta), method: :patch, data: { confirm: "Tem certeza que deseja bloquear essa conta?" } %>
+<% end %>

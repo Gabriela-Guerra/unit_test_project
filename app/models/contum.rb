@@ -1,0 +1,2 @@
+class Contum < ApplicationRecord
+end

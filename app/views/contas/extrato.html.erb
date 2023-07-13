@@ -1,0 +1,16 @@
+<h1>Extrato da conta <%= @conta.numero %></h1>
+
+<table>
+  <tr>
+    <th>Data</th>
+    <th>Descrição</th>
+    <th>Valor</th>
+  </tr>
+  <% @conta.movimentos.each do |movimento| %>
+    <tr>
+      <td><%= movimento.created_at.strftime("%d/%m/%Y %H:%M:%S") %></td>
+      <td><%= movimento.descricao %></td>
+      <td><%= number_to_currency(movimento.valor) %></td>
+    </tr>
+  <% end %>
+</table>

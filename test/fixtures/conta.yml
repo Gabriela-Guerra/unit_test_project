@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  saldo: 9.99
+  bloqueada: false
+  numero: MyString
+
+two:
+  saldo: 9.99
+  bloqueada: false
+  numero: MyString

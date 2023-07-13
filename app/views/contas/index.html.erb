@@ -1,0 +1,12 @@
+<h1>Contas</h1>
+
+<ul>
+  <% @contas.each do |conta| %>
+    <li>
+      <%= link_to conta.numero, conta %>
+      <% if conta.bloqueada %>
+        (bloqueada)
+      <% end %>
+    </li>
+  <% end %>
+</ul>
