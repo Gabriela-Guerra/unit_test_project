@@ -33,29 +33,49 @@ RSpec.describe ContasController, type: :controller do
     let(:conta_origem) { Conta.create(numero: '123', saldo: 100.0) }
     let(:conta_destino) { Conta.create(numero: '456', saldo: 0.0) }
 
-    it 'redirects to conta_origem on successful transferencia' do
-      post :transferencia, params: { conta_origem_id: conta_origem.id, conta_destino_id: conta_destino.id, valor: 50.0 }
-      expect(response).to redirect_to(conta_origem)
+    context 'with valid transferencia' do
+      before do
+        post :transferencia, params: { conta_origem_id: conta_origem.id, conta_destino_id: conta_destino.id, valor: 50.0 }
+      end
+
+      it 'redirects to conta_origem' do
+        expect(response).to redirect_to(conta_origem)
+      end
+
+      it 'updates the saldo of conta_origem and conta_destino' do
+        conta_origem.reload
+        conta_destino.reload
+        expect(conta_origem.saldo).to eq(50.0)
+        expect(conta_destino.saldo).to eq(50.0)
+      end
     end
 
-    it 'updates the saldo of conta_origem and conta_destino' do
-      post :transferencia, params: { conta_origem_id: conta_origem.id, conta_destino_id: conta_destino.id, valor: 50.0 }
-      conta_origem.reload
-      conta_destino.reload
-      expect(conta_origem.saldo).to eq(50.0)
-      expect(conta_destino.saldo).to eq(50.0)
+    context 'with negative valor' do
+      before do
+        post :transferencia, params: { conta_origem_id: conta_origem.id, conta_destino_id: conta_destino.id, valor: -50.0 }
+      end
+
+      it 'shows flash error' do
+        expect(flash[:error]).to eq('O valor da transferência deve ser maior que zero.')
+      end
+
+      it 'redirects to conta_origem' do
+        expect(response).to redirect_to(conta_origem)
+      end
     end
 
-    it 'shows flash error and redirects to conta_origem if valor is negative' do
-      post :transferencia, params: { conta_origem_id: conta_origem.id, conta_destino_id: conta_destino.id, valor: -50.0 }
-      expect(flash[:error]).to eq('O valor da transferência deve ser maior que zero.')
-      expect(response).to redirect_to(conta_origem)
-    end
+    context 'with insufficient saldo' do
+      before do
+        post :transferencia, params: { conta_origem_id: conta_origem.id, conta_destino_id: conta_destino.id, valor: 150.0 }
+      end
 
-    it 'shows flash error and redirects to conta_origem if saldo is insufficient' do
-      post :transferencia, params: { conta_origem_id: conta_origem.id, conta_destino_id: conta_destino.id, valor: 150.0 }
-      expect(flash[:error]).to eq('Saldo insuficiente para a transferência.')
-      expect(response).to redirect_to(conta_origem)
+      it 'shows flash error' do
+        expect(flash[:error]).to eq('Saldo insuficiente para a transferência.')
+      end
+
+      it 'redirects to conta_origem' do
+        expect(response).to redirect_to(conta_origem)
+      end
     end
   end
 
@@ -83,23 +103,34 @@ RSpec.describe ContasController, type: :controller do
   describe 'PATCH #bloquear' do
     let(:conta) { Conta.create(numero: '123', saldo: 0.0) }
 
-    it 'redirects to conta on successful bloquear' do
-      patch :bloquear, params: { id: conta.id }
-      expect(response).to redirect_to(conta)
-    end
-
-    it 'updates the bloqueada attribute of the conta' do
-      expect {
+    context 'with successful bloquear' do
+      before do
         patch :bloquear, params: { id: conta.id }
         conta.reload
-      }.to change { conta.bloqueada }.from(false).to(true)
+      end
+
+      it 'redirects to conta' do
+        expect(response).to redirect_to(conta)
+      end
+
+      it 'updates the bloqueada attribute of the conta' do
+        expect(conta.bloqueada).to be true
+      end
     end
 
-    it 'shows flash error and redirects to conta if saldo is positive' do
-      conta.update(saldo: 100.0)
-      patch :bloquear, params: { id: conta.id }
-      expect(flash[:error]).to eq('A conta não pode ser bloqueada com saldo positivo.')
-      expect(response).to redirect_to(conta)
+    context 'with positive saldo' do
+      before do
+        conta.update(saldo: 100.0)
+        patch :bloquear, params: { id: conta.id }
+      end
+
+      it 'shows flash error' do
+        expect(flash[:error]).to eq('A conta não pode ser bloqueada com saldo positivo.')
+      end
+
+      it 'redirects to conta' do
+        expect(response).to redirect_to(conta)
+      end
     end
   end
 end
